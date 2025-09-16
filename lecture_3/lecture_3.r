@@ -7,9 +7,9 @@ rm(list = ls())
 set.seed(22092008)
 
 N <- 1000000   # population size
-n <- 100       # sample size
+n <- 400      # sample size
 numloop <- 10000 # number of samples
-p <- 0.35      # true proportion
+p <- 0.05      # true proportion
 
 # Generate population
 r <- rbinom(n = N, size = 1, prob = p)
@@ -48,14 +48,14 @@ cat("Empirical SE:", sd(g), "\n")
 
 # OK. That was fun. You can break this by making p = 0.01 and n=10. 
 
-#Now let's get ot the second question about Confidence Intervals. 
+#Now let's get to the second question about Confidence Intervals. 
 # Max said ``We are 95% confident that the true consumption of participants 
 # lies between 23.78 and 28.23 kWh per day.
 # I think there is commonly an issue with the use of the word ``confident``. 
 # This is standard usage found everywhere, but often gets confused with the word 
 # ``probability``. This is a discussion in Statistics that is old and still a 
 # sore spot for many. But the best way to think about a confidence interval 
-# in your mind is what the asker of the question proposed. `
+# in your mind is what the asked of the question proposed. `
 # `If I calculated a CI  1000 times on different random samples from the 
 # population, 95% of the time, the Confidence Interval would contain the true 
 #parameter.``
@@ -66,7 +66,7 @@ set.seed(22092008) # set random number generator seed
 
 N<-1000000 # population size
 n <- 1000 # sample size (for calculation of mean)
-df = n-1 # we are claculating a mean, so df = n-1
+df = n-1 # we are calculating a mean, so df = n-1
 
 # We will first do this once. Then repeat it {numloop} times. 
 numloop <- 10000 # number of draws
