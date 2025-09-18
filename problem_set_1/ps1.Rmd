@@ -23,7 +23,7 @@ Dave Eggers is a famous author. Prof. Max likes his books. Turns out, Dave Egger
 6. Conduct the hypothesis test and tell the funding agency what to do. Should they fund Dave or not?
 7. Calculate the Type II error probability if the true average sales are \$13100 per store and standard deviation is $2000.
 
-##Part B: Monte Carlo is not just a place in Monaco. 
+##Part B: Monte Carlo is not just a place isn Monaco. 
 
 In class Max showed a Monte Carlo experiment of how a sample proportion converges to a normal distribution if the sample size condition is met ($n*p>10$ and $(1-p)*n>10$ ). He also showed that things break down if that condition is not met. He also gave a condition necessary in the case of a continuous random variable, which required that a `` normal model provides an accurate approximation to the sampling distribution of the sample mean if the sample size n is larger than 10 times the absolute value of the kurtosis.
 $n > 10*|K4|$. Using the Monte Carlo code provided in lecture 2 as a point of departure, design a Monte Carlo for a setting that violates this condition and show us what the resulting sampling distribution looks like as a histogram. I would run a Monte Carlo with 10,000 reps and a histogram with 50 bins. 
