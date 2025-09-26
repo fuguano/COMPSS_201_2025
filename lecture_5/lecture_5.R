@@ -1,6 +1,5 @@
-# Lecture 4
-# Let's do some testing of differences in means!
-# and then some regression stuff.
+# Lecture 5
+# Some regression stuff.
 # The repo also contains a knitr version of this file, which makes nice pdf files.....
 
 rm(list = ls())
