@@ -1,7 +1,7 @@
 rm(list = ls()) # clear memory
-setwd("/Users/auffhammer/tmp/COMPSS212_F24/slides/Lecture_06")
+setwd("/Users/auffhammer/Library/CloudStorage/Dropbox/06_Teaching/MACSS/2025/COMPSS_201_2025/lecture_6")
 # if you are on jupyter, use this one: 
-setwd("/Users/auffhammer/tmp/COMPSS212_F24/slides/Lecture_06")
+# setwd("~/COMPSS_201_2025/lecture_6")
 options(htmltools.dir.version = FALSE)
 library(pacman)
 p_load(ggplot2,GGally,skedastic,lfe)
