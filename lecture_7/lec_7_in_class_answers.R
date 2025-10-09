@@ -10,7 +10,7 @@ p_load(ggplot2,dplyr)
 class_7 <-read.csv("class_7.csv")
 
 #2. Regress births on income. 
-mod_1 <- lm(births ~ income, data=class_7)
+mod_1 <- lm(births ~ income + time, data=class_7)
 class_7$res <-mod_1$resid
 summary(mod_1)
 
@@ -35,10 +35,13 @@ ggplot(class_7,aes(x=time, y=res),) +
 # Wowza! That surely looks correlated across time!
 
 #5. Test for AR(1) errors by using the residuals from your regression (regress residual on its lag)
-# Use dplyr to add some lags. You could do thsi in base r too. But this is fancier. 
+# Use dplyr to add some lags. You could do this in base r too. But this is fancier. 
 class_7 <- class_7 %>%
   arrange(time) %>%                    # ensure time is sorted
-  mutate(lag_res = lag(res, n = 1))    # create 1-period lag of residuals
+  mutate(lag_res = lag(res, n = 1))  %>%                   
+  mutate(lag_time = lag(time, n = 1)) %>%
+  mutate(lag_births = lag(births, n = 1)) %>%
+  mutate(lag_income = lag(income, n = 1)) # create 1-period lag of residuals
 
 mod_3 <- lm(res~ 0 + lag_res, data=class_7)
 summary(mod_3)
@@ -49,10 +52,11 @@ summary(mod_3)
 #6. Follow the steps in the slides on calculating the FGLS estimator. 
 # Do the transformation. The third one transforms the intercept. 
 
-class_7$ytrans <- class_7$births - mod_3$coefficients*lag(class_7$births)
-class_7$xtrans <- class_7$income - mod_3$coefficients*lag(class_7$income)
+class_7$ytrans <- class_7$births - mod_3$coefficients*class_7$lag_births
+class_7$x1trans <- class_7$income - mod_3$coefficients*class_7$lag_income
+class_7$x2trans <- class_7$time - mod_3$coefficients*class_7$lag_time
 class_7$one <- 1-mod_3$coefficients
 
 # Run model on transformed data. 
-mod_5 <- lm(ytrans ~ -1 +one +xtrans, data=class_7)
+mod_5 <- lm(ytrans ~ -1 +one +x1trans + x2trans, data=class_7)
 summary(mod_5)
