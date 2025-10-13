@@ -15,7 +15,7 @@ p_load(ggplot2, dplyr, crosstable, flextable, plyr, MASS,stargazer)
 # In fact, I checked and he can. 
 #That said, interpreting what it tells you is going to be the art form. 
 
-setwd("/Users/auffhammer/Library/CloudStorage/Dropbox/06_Teaching/MACSS/2025/COMPSS_201_2025/lecture_4")
+# setwd("/Users/auffhammer/Library/CloudStorage/Dropbox/06_Teaching/MACSS/2025/COMPSS_201_2025/lecture_4")
 airfares <- read.csv("airfares.csv")
 #Let's plot some data. 
 ggplot(airfares, aes(x=dist, y=fare)) + 
@@ -24,6 +24,7 @@ ggplot(airfares, aes(x=dist, y=fare)) +
   labs(title="Airfare by Distance",
        x="Distance (Miles)", y = "Fare (US$)")+
   theme_classic()  
+  
 
 
 #Let's run a regression.  
