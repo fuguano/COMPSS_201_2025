@@ -1,14 +1,13 @@
 # In Class Week 7
 rm(list = ls()) # clear memory
 # Put your own working Directory Here# if you are on jupyter, use this one: 
-#Jupyter#  setwd("~/COMPSS_201_2025/lecture_6")
+#Jupyter#  setwd("~/COMPSS_201_2025/lecture_7")
 setwd("/Users/auffhammer/Library/CloudStorage/Dropbox/06_Teaching/MACSS/2024/code/public-repository-1/week_7")
 library(pacman)
-p_load(ggplot2,dplyr)
+p_load(ggplot2,dplyr,plm)
 
 #1. Read in data "class_7.csv"
 class_7 <-read.csv("class_7.csv")
-
 #2. Regress births on income. 
 mod_1 <- lm(births ~ income + time, data=class_7)
 class_7$res <-mod_1$resid
@@ -60,3 +59,8 @@ class_7$one <- 1-mod_3$coefficients
 # Run model on transformed data. 
 mod_5 <- lm(ytrans ~ -1 +one +x1trans + x2trans, data=class_7)
 summary(mod_5)
+
+# What about those fancy Newey-West Standard Errors? The PLM package does these directly
+plm_model <- plm(formula = births ~ income + cheese, data=class_7, model = "pooling")
+summary(plm_model)
+coeftest(plm_model, vcov = function(x) NeweyWest(x, lag = 4))
