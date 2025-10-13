@@ -4,7 +4,7 @@ rm(list = ls()) # clear memory
 #Jupyter#  setwd("~/COMPSS_201_2025/lecture_7")
 setwd("/Users/auffhammer/Library/CloudStorage/Dropbox/06_Teaching/MACSS/2024/code/public-repository-1/week_7")
 library(pacman)
-p_load(ggplot2,dplyr,plm)
+p_load(ggplot2,dplyr,sandwich,lmtest)
 
 #1. Read in data "class_7.csv"
 class_7 <-read.csv("class_7.csv")
@@ -60,7 +60,14 @@ class_7$one <- 1-mod_3$coefficients
 mod_5 <- lm(ytrans ~ -1 +one +x1trans + x2trans, data=class_7)
 summary(mod_5)
 
-# What about those fancy Newey-West Standard Errors? The PLM package does these directly
-plm_model <- plm(formula = births ~ income + cheese, data=class_7, model = "pooling")
-summary(plm_model)
-coeftest(plm_model, vcov = function(x) NeweyWest(x, lag = 4))
+# What about those fancy Newey-West Standard Errors? here you go. 
+#  -----Newey–West SEs for time-series autocorrelation ---
+# Use if the rows are ordered in time and you suspect serial correlation.
+# Choose lag L; a common rule-of-thumb is floor(4*(n/100)^(2/9)).
+# I made this a bit fancier than what I had in the slides, where it now
+# puts out a nice regression table with the fixed standard errors. 
+L <- floor(4 * (nrow(class_7) / 100)^(2/9))
+nw_vcov <- NeweyWest(mod_1, lag = L, prewhite = FALSE, adjust = TRUE)
+cat("\n=== OLS with Newey–West SEs ===\n")
+print(coeftest(mod_1, vcov = nw_vcov))
+
