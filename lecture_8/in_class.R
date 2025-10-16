@@ -1,7 +1,7 @@
 # In Class Week 8
 rm(list = ls()) # clear memory
 # Put your own working Directory Here
-setwd("/Users/auffhammer/Library/CloudStorage/Dropbox/06_Teaching/MACSS/2024/code/public-repository-1/week_7")
+# setwd("/Users/auffhammer/Library/CloudStorage/Dropbox/06_Teaching/MACSS/2024/code/public-repository-1/week_7")
 # if you are on jupyter, use this one: 
 #Jupyter#  setwd("~/COMPSS_201_2025/lecture_7")
 set.seed(22092008)
