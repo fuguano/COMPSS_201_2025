@@ -38,6 +38,7 @@ as_flextable() %>%
 flextable::autofit()
 summary_table
 ```
+
 ```{r correlogram, include=TRUE}
 # 2
 ggpairs(song_df,
@@ -47,7 +48,7 @@ upper = list(continuous = wrap("cor", size = 4))) +
 theme_classic(base_size = 14)
 
 ```
-
+* Findings: 
 
 3. Using the `lm` package, regress song_popularity on the other variables from the previous question. Produce some decent looking regression output. Compare the slope estimates from this regression to the correlations between the outcome and the right hand side variable from question 2. Any sign changes? Interpret the coefficient on the variable `danceability` correctly (in actual words!) What does your F-Test tell you for this regression you ran?
 ```{r reg1, include=TRUE}
@@ -60,6 +61,7 @@ stargazer(model, type = "text", digits = 3,
 title = "OLS Regression: Popularity on Song Characteristics", style = "qje")
 
 ```
+* Slope estimates vs correlations: 
 
 4. Plot the residuals from this regression against the predicted values. Are you worried about heteroskedasticity?
 ```{r reg3, include=TRUE}
@@ -76,6 +78,7 @@ y = "Residuals"
 ) +
 theme_classic(base_size = 16)
 ```
+* I am worried about heteroskedasticity because visually 
 
 5. Formally test for heteroskedasticity using the White test from `skedastic` package (turns out `whitestrap` is absolute garbage). What do you conclude?
 
@@ -84,8 +87,9 @@ install.packages("skedastic")
 library(skedastic)
 
 white_test <- white(model, interactions = TRUE)
-white_test
+print(white_test)
 ```
+* conclusions. from white test: 
 
 6. Using the `felm` package show regression output using the white robust standard errors. Did the coefficients change? Did the standard errors on the coefficients change?  Did any of your t-statistics change? Did your F-Statistic Change?
 
