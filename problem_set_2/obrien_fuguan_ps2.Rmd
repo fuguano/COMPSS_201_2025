@@ -11,7 +11,7 @@ rm(list = ls()) # clear memory
 setwd("/Users/fuguan/Documents/GitHub/COMPSS_201_2025/problem_set_2")
 options(htmltools.dir.version = FALSE)
 library(pacman)
-p_load(I will leave these up to you!)
+p_load(tidyverse, GGally, skimr, flextable, crosstable, ggplot2)
 
 ```
 ## Tentative Due Date: October 21
@@ -25,35 +25,132 @@ You are working for Spotify. You are feeling pretty good about yourself about th
 2. We will focus on the variables `song_popularity, song_duration_ms, acousticness, danceability, energy, tempo`. Make a nice correlation matrix figure. I used `ggpairs`, but knock yourself out. What do you see? Any interesting correlations?
 
 ```{r correlogram, include=TRUE}
+# 1 
+song_data <- read.csv("song_data_2025.csv")
+song_df <- song_data %>%
+select(song_popularity, song_duration_ms, acousticness, danceability, energy, tempo)
+
+summary_table <- crosstable(song_df,
+by = NULL,
+funs = c("mean", "sd", "min", "max"),
+test = FALSE) %>%
+as_flextable() %>%
+flextable::autofit()
+summary_table
+```
+```{r correlogram, include=TRUE}
+# 2
+ggpairs(song_df,
+lower = list(continuous = wrap("smooth", alpha = 0.3, size = 0.2)),
+diag = list(continuous = wrap("barDiag", bins = 20, fill = "#FC9313")),
+upper = list(continuous = wrap("cor", size = 4))) +
+theme_classic(base_size = 14)
 
 ```
 
+
 3. Using the `lm` package, regress song_popularity on the other variables from the previous question. Produce some decent looking regression output. Compare the slope estimates from this regression to the correlations between the outcome and the right hand side variable from question 2. Any sign changes? Interpret the coefficient on the variable `danceability` correctly (in actual words!) What does your F-Test tell you for this regression you ran?
 ```{r reg1, include=TRUE}
+model <- lm(song_popularity ~ song_duration_ms + acousticness + danceability + energy + tempo,
+data = song_df)
 
+install.packages("stargazer")
+library(stargazer)
+stargazer(model, type = "text", digits = 3,
+title = "OLS Regression: Popularity on Song Characteristics", style = "qje")
 
 ```
 
 4. Plot the residuals from this regression against the predicted values. Are you worried about heteroskedasticity?
 ```{r reg3, include=TRUE}
+song_df$residuals <- model$residuals
+song_df$predicted <- model$fitted.values
 
+ggplot(song_df, aes(x = predicted, y = residuals)) +
+geom_point(alpha = 0.5, shape = 16, color = "#002676") +
+geom_smooth(method = "lm", se = FALSE, color = "#FC9313") +
+labs(
+title = "Residual Plot: Song Popularity Regression",
+x = "Predicted Popularity",
+y = "Residuals"
+) +
+theme_classic(base_size = 16)
 ```
 
 5. Formally test for heteroskedasticity using the White test from `skedastic` package (turns out `whitestrap` is absolute garbage). What do you conclude?
 
 ```{r reg4, include=TRUE}
+install.packages("skedastic")
+library(skedastic)
 
+white_test <- white(model, interactions = TRUE)
+white_test
 ```
 
 6. Using the `felm` package show regression output using the white robust standard errors. Did the coefficients change? Did the standard errors on the coefficients change?  Did any of your t-statistics change? Did your F-Statistic Change?
 
 ```{r reg5, include=TRUE}
+install.packages("lfe")
+library(lfe)
 
+robust_model <- felm(song_popularity ~ song_duration_ms + acousticness + danceability + energy + tempo,
+data = song_df)
+
+cat("\n--- Non-Robust Standard Errors ---\n")
+summary(robust_model, robust = FALSE) %>%
+capture.output() %>%
+.[10:13] %>%
+paste0("\n") %>%
+cat()
+
+
+cat("\n--- Robust (White) Standard Errors ---\n")
+summary(robust_model, robust = TRUE) %>%
+capture.output() %>%
+.[10:13] %>%
+paste0("\n") %>%
+cat()
 ```
 
 7. Now for the fun part. Packages are great. But let's do the White Test by hand, so we can understand what is happening. The first step is to generate your outcome variable for your White regression. Create a variable called e2, which is the squared residuals. Then create new variables, which are each the square of song_duration_ms, acousticness, danceability, energy, tempo. Then create interactions between these variables. These interactions are all possible pairwise products of these. e.g. acousticness x danceability and energy x danceability. Then run a regression of the squared residuals on the right hand side variables, their squares and the interactions you generated. Can you replicate the test statistic from step 5?
 
 ```{r reg6, include=TRUE}
+# squared residuals
+song_df$e2 <- model$residuals^2
+
+# squares and interaction terms
+song_df <- song_df %>%
+mutate(
+song_duration_ms2 = song_duration_ms^2,
+acousticness2 = acousticness^2,
+danceability2 = danceability^2,
+energy2 = energy^2,
+tempo2 = tempo^2,
+# pairwise interactions
+ac_x_dance = acousticness * danceability,
+ac_x_energy = acousticness * energy,
+ac_x_tempo = acousticness * tempo,
+dance_x_energy = danceability * energy,
+dance_x_tempo = danceability * tempo,
+energy_x_tempo = energy * tempo
+)
+
+# auxiliary regression
+aux <- lm(e2 ~ song_duration_ms + acousticness + danceability + energy + tempo +
+song_duration_ms2 + acousticness2 + danceability2 + energy2 + tempo2 +
+ac_x_dance + ac_x_energy + ac_x_tempo + dance_x_energy + dance_x_tempo + energy_x_tempo,
+data = song_df)
+summary(aux)
+
+# white LM statistic
+n <- nobs(aux)
+R2 <- summary(aux)$r.squared
+LM <- n * R2
+df <- length(coef(aux)) - 1
+pval <- pchisq(LM, df = df, lower.tail = FALSE)
+
+cat("\nWhite Test (Manual):\n")
+cat("LM Statistic =", round(LM, 3), "\nDegrees of Freedom =", df, "\nP-Value =", round(pval, 4), "\n")
 
 ```
 
