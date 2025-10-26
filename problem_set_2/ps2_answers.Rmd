@@ -1,0 +1,121 @@
+---
+title: "Problem Set 2"
+author: "MaCCS 201 - Fall 2025"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list = ls()) # clear memory
+setwd("/Users/auffhammer/Library/CloudStorage/Dropbox/06_Teaching/MACSS/2025/COMPSS_201_2025/problem_set_2")
+options(htmltools.dir.version = FALSE)
+library(pacman)
+p_load(summarytools,tidyverse, FSM,car,lfe, parallel,GGally,broom,kableExtra, estimatr,plm,leaflet, gganimate, ggplot2, ggthemes, viridis, dplyr, magrittr, knitr,pagedown,tibble,latex2exp,MASS,stargazer)
+
+white_test <- function(model) {
+  # Extract residuals and fitted values from the model
+  residuals_squared <- residuals(model)^2
+  fitted_values <- fitted(model)
+  
+  # Construct interaction terms: x, x^2, and interactions between predictors
+  predictors <- model.matrix(model)[, -1]  # Exclude the intercept
+  predictors_sq <- predictors^2  # Squared predictors
+  interactions <- combn(ncol(predictors), 2, function(x) predictors[, x[1]] * predictors[, x[2]])
+
+  # Combine predictors, squared terms, and interactions into a new design matrix
+  design_matrix <- cbind(1, predictors, predictors_sq, interactions)
+  
+  # Fit the auxiliary regression (residuals^2 on the new design matrix)
+  auxiliary_model <- lm(residuals_squared ~ 0 + design_matrix)
+
+  # Perform the White test
+  n <- nrow(predictors)
+  R2 <- summary(auxiliary_model)$r.squared
+  test_statistic <- n * R2  # White test statistic
+  
+  # p-value for the test (Chi-squared distribution with k degrees of freedom)
+  df <- ncol(design_matrix)  # Degrees of freedom
+  p_value <- 1 - pchisq(test_statistic, df)
+  
+  # Return results as a list
+  list(
+    statistic = test_statistic,
+    df = df,
+    p_value = p_value
+  )
+}
+
+```
+## Tentative Due Date: October 19
+### Please submit markdown file named [last_name]_[first_name]_ps1.Rmd or a pdf with all code and answers. 
+
+##Part A: Which songs become popular? 
+
+You are working for Spotify. You are feeling pretty good about yourself about this gig. Your senior VP walks in and says "Hey fancy stats person, can you help us figure out which factors affect the popularity of a song? The predictive analytics shop is doing a pretty good job at predicting, but I want to truly understand what factors drive popularity, instead of some black box ML algorithm output." She Whatsapps you a dataset of 17835 songs she found on Kaggle. The dataset is called `song_data.csv`. It has a number of characteristics of each song in it. 
+
+1. Create a nice looking summary statistics table in R, which lists the mean, standard deviation, min and and max for each of the variables. 
+```{r sumsats, include=TRUE}
+songs <- read.csv("song_data_2025.csv")
+descr(songs)
+```
+2. We will focus on the variables `song_popularity, song_duration_ms, acousticness, danceability, energy, tempo`. Make a nice correlation matrix figure. I used `ggpairs`, but knock yourself out. What do you see? Any interesting correlations?
+
+```{r correlogram, include=TRUE}
+songs2 <- songs[c(3,4,5,6,7, 14)]
+ggpairs(songs2)
+```
+
+3. Using the lm package, regress song_popularity on the other variables from the previous question. Produce some decent looking regression output. Compare the slope estimates from this regression to the correlations between the outcome and the right hand side variable from question 2. Any sign changes? Interpret the coefficient on the variable danceability correctly (in actual words!) What does your F-Test tell you for this regression you ran?
+```{r reg1, include=TRUE}
+model_1 <- lm( song_popularity ~ song_duration_ms + acousticness + danceability + energy + tempo, data=songs)
+summary(model_1)
+
+```
+
+4. Plot the residuals from this regression against the predicted values. Are you worried about heteroskedasticity?
+```{r reg3, include=TRUE}
+songs$res <- model_1$resid
+songs$yhat <- songs$song_popularity - songs$res
+
+ggplot(songs, aes(x=yhat, y=res)) +
+  geom_point(alpha=0.5, shape=16, fill="#002676", color="#002676", size=2)+
+  geom_smooth(method=lm, se=FALSE, color="#FC9313")+
+  labs(title="Residual Plot",
+       x="Predicted Values", y = "Residual")+
+  theme_classic(base_size = 20) 
+```
+
+5. We skip 5. We do this by hand below. 
+
+6. Using the felm package show regression output using the white robust standard errors. Did the coefficients change? Did the standard errors on the coefficients change?  Did any of your t-statistics change? Did your F-Statistic Change?
+
+```{r reg5, include=TRUE}
+model_2 <- felm( song_popularity ~ song_duration_ms + acousticness + danceability + energy + tempo, data=songs)
+summary(model_2,robust = T)
+summary(model_2,robust = F)
+```
+
+7. Now for the fun part. Packages are great. But let's do the White Test by hand, so we can understand what is happening. The first step is to generate your outcome variable for your White regression. Create a variable called e2, which is the squared residuals. Then create new variables, which are each the square of song_duration_ms, acousticness, danceability, energy, tempo. Then create interactions between these variables. These interactions are all possible pairwise products of these. e.g. acousticness x danceability and energy x danceability. Then run a regression of the squared residuals on the right hand side variables, their squares and the interactions you generated. Can you replicate the test statistic from step 5?
+
+```{r reg6, include=TRUE}
+# You could do the following by hand, but I am a bit lazy. Generate the squares and interactions. 
+# Put rhs variables in a frame
+songsw <- songs2[c(2:6)]
+whites <- make_sq_inter(data_frame = songsw, is_square = TRUE, is_inter = TRUE, keep_marginal = FALSE)
+whites <- make_sq_inter(data_frame = songsw, is_square = TRUE, is_inter = TRUE, keep_marginal = TRUE)
+whites$dep <- (songs$res)^2
+white_t_manual <- lm(dep ~  . , data=whites)
+white_r2 <- summary(white_t_manual)$r.squared
+# Calculate the White test statistic
+white_stat <- 18835 * white_r2
+white_stat
+# Calculate the p-value
+pchisq(q = white_stat, df = 20, lower.tail = F)
+
+# Matches what we got above!
+```
+
+ 
+
+

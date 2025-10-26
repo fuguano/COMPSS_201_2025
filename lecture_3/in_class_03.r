@@ -1,0 +1,212 @@
+# Lecture 3. 
+# OK. Let's start iwth a warmup. Last time we showed that the Central Limit Theorem
+# works for continuous variables. Max argued that this also works for proportions!
+# After all a proportion is just the average of a binary outcome. Let's
+# show this. 
+rm(list = ls())
+set.seed(22092008)
+
+N <- 1000000   # population size
+n <- 500      # sample size
+numloop <- 10000 # number of samples
+p <- 0.35      # true proportion
+
+# Generate population
+r <- rbinom(n = N, size = 1, prob = p)
+sig2 <- p * (1 - p)
+
+# Plot population
+hist(r, prob = TRUE, 
+     main = "Population: Bernoulli(0.35)",
+     xlab = "Outcome", col = "lightblue")
+
+readline(prompt="Press [enter] to continue")
+
+# Placeholder for sample means
+g <- numeric(numloop)
+
+# Monte Carlo loop
+for (i in 1:numloop) {
+  tmp <- sample(r, n, replace = FALSE)
+  g[i] <- mean(tmp)
+}
+
+# Histogram of sample means
+hist(g, prob = TRUE, breaks = 50,
+     main = "Sampling Distribution of Sample Proportion",
+     xlab = "Sample Proportion", col = "skyblue")
+
+# Overlay normal curve
+curve(dnorm(x, mean = p, sd = sqrt(sig2/n)),
+      col = "red", lwd = 2, add = TRUE)
+
+# Show comparison
+cat("Theoretical mean:", p, "\n")
+cat("Empirical mean:", mean(g), "\n")
+cat("Theoretical SE:", sqrt(sig2/n), "\n")
+cat("Empirical SE:", sd(g), "\n")
+
+# OK. That was fun. You can break this by making p = 0.01 and n=10. 
+
+#Now let's get to the second question about Confidence Intervals. 
+# Max said ``We are 95% confident that the true consumption of participants 
+# lies between 23.78 and 28.23 kWh per day.
+# I think there is commonly an issue with the use of the word ``confident``. 
+# This is standard usage found everywhere, but often gets confused with the word 
+# ``probability``. This is a discussion in Statistics that is old and still a 
+# sore spot for many. But the best way to think about a confidence interval 
+# in your mind is what the asked of the question proposed. `
+# `If I calculated a CI  1000 times on different random samples from the 
+# population, 95% of the time, the Confidence Interval would contain the true 
+#parameter.``
+
+rm(list = ls()) # clear memory
+library("dplyr") # some data wrangling tools we like. 
+set.seed(22092008) # set random number generator seed
+
+N<-1000000 # population size
+n <- 1000 # sample size (for calculation of mean)
+df = n-1 # we are calculating a mean, so df = n-1
+
+# We will first do this once. Then repeat it {numloop} times. 
+numloop <- 10000 # number of draws
+
+# Placeholder
+g <- numeric(numloop) 
+gtmp <-numeric(numloop) 
+se <-numeric(numloop) 
+cil <-numeric(numloop)
+ciu <-numeric(numloop) 
+cheese <-numeric(numloop) 
+# Set Type 1 Error Probability
+alpha <- 0.05 
+a2 <-0.5*alpha # claculate alpha/2
+
+# # Let's use normally distributed data
+ sig2 <- 1 # variance for population
+ mu <- 0 # mean of population 
+ r <- rnorm(N, mean=mu,sd=sqrt(sig2))
+
+
+
+# Plot population
+hist(r,prob=TRUE,breaks = 50,main = "Raw data")
+
+# Let us calculate a confidence interval for a single sample we drew. 
+
+tmp <-sample(r, n, replace = FALSE, prob = NULL)
+ gtmp <- mean(tmp)
+ se <-sqrt(var(tmp)/n)
+ cil <- gtmp+qt(0.5*alpha,n-1)*se
+ ciu <- gtmp-qt(0.5*alpha,n-1)*se
+cheese <- between(mu,cil,ciu)
+print(cil)
+print(ciu)
+print(cheese)
+
+# Now let's do this numloop times
+for(i in 1:numloop) {
+tmp <-sample(r, n, replace = TRUE, prob = NULL)
+gtmp[i] <- mean(tmp)
+se[i] <-sqrt(var(tmp)/n)
+cil[i] <- gtmp[i]+qt(a2,df)*se[i]
+ciu[i] <- gtmp[i]-qt(a2,df)*se[i]
+cheese[i] <- mu<cil[i] | mu>ciu[i]
+}
+print(round(mean(cheese),2))
+
+# COOL, right! So hopefully this helped us think about the interpretation 
+# of a confidence interval a bit. 
+
+
+# Exercise 3. A hypothesis test. 
+# Let's play with the windmills example a bit. 
+
+rm(list = ls()) # clear memory
+library(ggplot2) # Pretty Plots
+
+p <- 0.4 # p under null hypothesis
+n <- 35 # sample size (like in class)
+a <- 0.05 # Type 1 Error (we choose)
+
+# Let's plot the smapling distribution under the null being true!
+x <- seq(0, 1, .002) # prportions lie between 0 and 1! 
+y0 <- dnorm(x,mean=p,sd = sqrt((p*(1-p)/n)), log = FALSE)
+dat <- cbind.data.frame(x,y0)
+ggplot(dat, aes(x = x, y = y0)) +
+  geom_line(size=0.2) +
+  geom_vline(aes(xintercept=p), linetype="solid", size=0.5, colour="red") +
+  theme_minimal() +
+  geom_vline(aes(xintercept=qnorm(a,mean=p,sd = sqrt((p*(1-p)/n)), log = FALSE)),linetype="solid", size=0.5, colour="blue") +
+ geom_area(mapping = aes(x = ifelse(x<qnorm(.95,mean=p,sd = sqrt((p*(1-p)/n)), log = FALSE, lower.tail=F), x, 0)), fill = "blue")
+
+phat <- 0.343
+ggplot(dat, aes(x = x, y = y0)) +
+  geom_line(size=0.2) +
+  geom_area(mapping = aes(x = ifelse(x<qnorm(1-.245,mean=p,sd = sqrt((p*(1-p)/n)),  lower.tail=F), x, 0)), alpha=0.5 , fill = "firebrick1")+ 
+  xlim(0,0.7) + ylim(-.01,max(y1)) +
+  geom_vline(aes(xintercept=phat), linetype="solid", size=0.2, colour="blue") +
+  geom_hline(aes(yintercept=0), linetype="solid", size=0.2, colour="black") +
+  annotate("text", label = "P-value", x = 0.27, y = 0.4, size = 3, colour = "black") +
+  labs(x="Share Defective", y="Density") +
+  theme_minimal()
+
+
+
+
+
++
+  
+  
+ +
+  geom_vline(aes(xintercept=qnorm(0.05,mean=p,sd = sqrt((p*(1-p)/n)), log = FALSE)),
+             linetype="solid", size=0.2, colour="blue") +
+  geom_hline(aes(yintercept=0), linetype="solid", size=0.2, colour="black") +
+  annotate("text", label = "fail to reject", x = 0.6, y = 3, size = 4, colour = "blue") +
+  annotate("text", label = "reject", x =0.1, y = 3, size = 4, colour = "red") +
+  #annotate("text", label = expression(alpha), x = 0.25, y = 0.4, size = 5, colour = "black") +
+  labs(x="Share Defective", y="Density") +
+  geom_segment(aes(x = qnorm(.95,mean=p,sd = sqrt((p*(1-p)/n)), log = FALSE, lower.tail=F), y = 0, xend = 0.7, yend = 0), linetype="solid", size=1, colour="blue") + 
+  geom_segment(aes(x = 0, y=0, xend= qnorm(.95,mean=p,sd = sqrt((p*(1-p)/n)), log = FALSE, lower.tail=F), yend = 0), linetype="solid", size=1, colour="red") + 
+  theme_minimal()+
+  geom_area(mapping = aes(x = ifelse(x>qnorm(.95,mean=p,sd = sqrt((p*(1-p)/n)), log = FALSE, lower.tail=F), x, 0), y=y1), alpha=0.5, fill = "skyblue") +
+  geom_line(mapping=aes(x=x,y=y1),linetype="solid", size=0.2, colour="grey") 
+#geom_line(mapping=aes(x=x,y=y0)) +
+#annotate("text", label = expression(beta), x = 0.3, y = .2, size = 5, colour = "black")
+p3
+
+
+
+
+
+pf <- 0.30 # p true if null not true
+
+x <- seq(0, 1, .002)
+y0 <- dnorm(x,mean=p,sd = sqrt((p*(1-p)/n)), log = FALSE)
+y1 <- dnorm(x,mean=pf,sd = sqrt((pf*(1-pf)/n)), log = FALSE)
+dat <- cbind.data.frame(x,y0,y1)
+p3 <- ggplot(dat, aes(x = x, y = y0)) +
+  geom_line(size=0.2) +
+  geom_area(mapping = aes(x = ifelse(x<qnorm(.95,mean=p,sd = sqrt((p*(1-p)/n)), log = FALSE, lower.tail=F), x, 0)), fill = "firebrick1")+ 
+  xlim(0,0.7) + ylim(-.01,max(y1)) +
+  geom_vline(aes(xintercept=qnorm(0.05,mean=p,sd = sqrt((p*(1-p)/n)), log = FALSE)),
+             linetype="solid", size=0.2, colour="blue") +
+  geom_hline(aes(yintercept=0), linetype="solid", size=0.2, colour="black") +
+  annotate("text", label = "fail to reject", x = 0.6, y = 3, size = 4, colour = "blue") +
+  annotate("text", label = "reject", x =0.1, y = 3, size = 4, colour = "red") +
+  #annotate("text", label = expression(alpha), x = 0.25, y = 0.4, size = 5, colour = "black") +
+  labs(x="Share Defective", y="Density") +
+  geom_segment(aes(x = qnorm(.95,mean=p,sd = sqrt((p*(1-p)/n)), log = FALSE, lower.tail=F), y = 0, xend = 0.7, yend = 0), linetype="solid", size=1, colour="blue") + 
+  geom_segment(aes(x = 0, y=0, xend= qnorm(.95,mean=p,sd = sqrt((p*(1-p)/n)), log = FALSE, lower.tail=F), yend = 0), linetype="solid", size=1, colour="red") + 
+  theme_minimal()+
+  geom_area(mapping = aes(x = ifelse(x>qnorm(.95,mean=p,sd = sqrt((p*(1-p)/n)), log = FALSE, lower.tail=F), x, 0), y=y1), alpha=0.5, fill = "skyblue") +
+  geom_line(mapping=aes(x=x,y=y1),linetype="solid", size=0.2, colour="grey") 
+#geom_line(mapping=aes(x=x,y=y0)) +
+#annotate("text", label = expression(beta), x = 0.3, y = .2, size = 5, colour = "black")
+p3
+
+ 
+
+
+
+

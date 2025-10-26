@@ -11,7 +11,7 @@ rm(list = ls()) # clear memory
 setwd("/Users/auffhammer/Library/CloudStorage/Dropbox/06_Teaching/MACSS/2024/code/private-repository1/Problem Set 2")
 options(htmltools.dir.version = FALSE)
 library(pacman)
-p_load(I will leave these up to you!)
+#p_load(I will leave these up to you!)
 
 ```
 ## Tentative Due Date: October 21
