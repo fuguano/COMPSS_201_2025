@@ -1,7 +1,9 @@
 # A little panel data exercise
 # Explain variation in life expectancy across countries.
 rm(list = ls()) # clear memory
-setwd("/Users/auffhammer/Library/CloudStorage/Dropbox/06_Teaching/MACSS/2024/code/private-repository1/week10")
+setwd("/Users/auffhammer/Library/CloudStorage/Dropbox/06_Teaching/MACSS/2025/COMPSS_201_2025/lecture_10")
+#Jupyter Path is
+#setwd("~/COMPSS_201_2025/lecture_10")
 library(ggplot2,lfe)
 set.seed(22092008) # set random number generator seed
 wb <- read.csv("life.csv")

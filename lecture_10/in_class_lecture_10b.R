@@ -1,21 +1,25 @@
 rm(list = ls()) # clear memory
-setwd("/Users/auffhammer/Library/CloudStorage/Dropbox/06_Teaching/MACSS/2024/code/public-repository-1/week_10")
+setwd("/Users/auffhammer/Library/CloudStorage/Dropbox/06_Teaching/MACSS/2025/COMPSS_201_2025/lecture_10")
+#Jupyter Path is
+#setwd("~/COMPSS_201_2025/lecture_10")
 set.seed(22092008) # set random number generator seed
 library(pacman)
 p_load(tidyverse,broom,rdrobust,estimatr,modelsummary)
 # This is an excellent example from Andrew Weiss: 
-#hypothetical example, students take an entrance exam 
-#at the beginning of a school year. 
-#Those who score 70 or below are automatically enrolled 
-#in a free tutoring program and receive assistance throughout the year. 
-#At the end of the school year, students take a final test, 
-#or exit exam (with a maximum of 100 points) to measure how much 
-#they learned overall. Remember, this is a hypothetical example 
-#and tests like this don’t really exist
+# hypothetical example, students take an entrance exam 
+# at the beginning of a school year. 
+# Those who score 70 or below are automatically enrolled 
+# in a free tutoring program and receive assistance throughout the year. 
+# At the end of the school year, students take a final test, 
+# or exit exam (with a maximum of 100 points) to measure how much 
+# they learned overall. Remember, this is a hypothetical example 
+# and tests like this don’t really exist
 
 tutoring <- read_csv("tutoring_program_fuzzy.csv")
 
-# Show that some people scored higher on the entrance exam and somehow used tutoring, or that some people scored below the threshold but didn’t participate in the program, either because they’re never-takers, or because they fell through bureaucratic cracks.
+# Show that some people scored higher on the entrance exam and somehow used tutoring, 
+# or that some people scored below the threshold but didn’t participate in the program, 
+# either because they’re never-takers, or because they fell through bureaucratic cracks.
 ggplot(tutoring, aes(x = entrance_exam, y = tutoring_text, color = entrance_exam <= 70)) +
   # Make points small and semi-transparent since there are lots of them
   geom_point(size = 1.5, alpha = 0.5,
@@ -27,7 +31,7 @@ ggplot(tutoring, aes(x = entrance_exam, y = tutoring_text, color = entrance_exam
   # Turn off the color legend, since it's redundant
   guides(color = "none")
 
-# You can generate a table showing these numebrs
+# You can generate a table showing these numbers
 tutoring %>%
   group_by(tutoring, entrance_exam <= 70) %>%
   summarize(count = n()) %>%
@@ -73,7 +77,9 @@ ggplot(tutoring_with_bins, aes(x = exam_binned, y = prob_tutoring)) +
   geom_vline(xintercept = 8.5) +
   labs(x = "Entrance exam score", y = "Proportion of people participating in program")
 
-# If this were a sharp design, every single bar to the left of the cutpoint would be 100% and every single bar to the right would be 0%, but that’s not the case here. The probability of tutoring changes at the cutpoint, but it’s not 100% perfect.
+# If this were a sharp design, every single bar to the left of the cutpoint would be 100% and every single bar to the right would be 0%, 
+# but that’s not the case here. 
+# The probability of tutoring changes at the cutpoint, but it’s not 100% perfect.
 
 # Let's make an instrument and center this puppy
 tutoring_centered <- tutoring %>%

@@ -15,11 +15,13 @@ carpenter_dobkin_2009 <- read.csv("dobkin.csv")
 
 # At first, we have to compute a dummy variable (threshold), indicating whether an individual is 
 # below or above the cutoff. The dummy is equal to zero for observations below and equal to one 
-# for observations above the cutoff of 21 years. 
-#Then I am specifying a linear model with function lm() to regress all deaths 
-#per 100.000 (all) on the threshold dummy and the respondents’ age which is 
-#centered around the threshold value of age (21 years). 
-#This is done with function I() by subtracting the cutoff from each age bin.
+# for observations at or abive above the cutoff of 21 years. 
+# Then I am specifying a linear model with function lm() to regress all deaths 
+# per 100.000 (all) on the threshold dummy and the respondents’ age which is 
+# centered around the threshold value of age (21 years). 
+# This is done with function I() by subtracting the cutoff from each age bin.
+
+# Let's just look at the data. 
 
 carpenter_dobkin_2009 %>% 
   ggplot(aes(x = agecell, y = all)) + 
@@ -30,7 +32,7 @@ carpenter_dobkin_2009 %>%
        x = "Age (binned)") +
   theme_classic(base_size = 14)
 
-#At first, we have to compute a dummy variable (threshold), 
+# At first, we have to compute a dummy variable (threshold), 
 # indicating whether an individual is below or above the cutoff. 
 # The dummy is equal to zero for observations below and equal to one for 
 # observations aboev the cutoff of 21 years. Then I am specifying a linear model 
@@ -44,15 +46,13 @@ lm_same_slope <- carpenter_dobkin_2009 %>%
 # Output of the model. 
 summary(lm_same_slope) 
 
+# You can do this in a canned routine. I am replicating what we did above (standard errors are different)
+rd_out <- rdrobust(y = carpenter_dobkin_2009$ all, x = carpenter_dobkin_2009$agecell, , h=100, c = 21, p = 1, kernel = "uniform")
+summary(rd_out)
+
 #There is an alternative approach by using R package rdrobust which contains 
 # various functions related to applying the RDD. Within function rdd_reg_lm() 
 # I am using the argument slope = "same" to achieve the same result with the previous approach.
-
-rdd_data(y = carpenter_dobkin_2009$all, 
-         x = carpenter_dobkin_2009$agecell, 
-         cutpoint = 21) %>% 
-  rdd_reg_lm(slope = "same") %>% 
-  summary()
 
 # Do the same thing, but different slopes on each side. Do it by hand
 
@@ -61,12 +61,6 @@ lm_different_slope <- carpenter_dobkin_2009 %>%
   lm(all ~ threshold + I(agecell - 21) + threshold:I(agecell - 21))
 summary(lm_different_slope)
 
-# You can achieve the same with the fancy package. 
-rdd_data(y = carpenter_dobkin_2009$all, 
-         x = carpenter_dobkin_2009$agecell, 
-         cutpoint = 21) %>% 
-  rdd_reg_lm(slope = "separate") %>% 
-  summary()
 
 # Now let's visualize this. 
 
@@ -92,13 +86,7 @@ lm_quadratic <- carpenter_dobkin_2009 %>%
 
 summary(lm_quadratic)
 
-# Now quadratic by fancy. 
-
-rdd_data(y = carpenter_dobkin_2009$all, 
-         x = carpenter_dobkin_2009$agecell, 
-         cutpoint = 21) %>% 
-  rdd_reg_lm(slope = "separate", order = 2) %>% 
-  summary()
+# Now visualize
 
 carpenter_dobkin_2009 %>%
   select(agecell, all) %>%
@@ -139,10 +127,4 @@ carpenter_dobkin_2009 %>%
        x = "Age (binned)")+
 theme_classic(base_size = 14)
 
-# What happens if you use a third, fourth and fifth order polynomial? With and without the data limitation to 20-22?
-
-rdd_data(y = carpenter_dobkin_2009$all, 
-         x = carpenter_dobkin_2009$agecell, 
-         cutpoint = 21) %>% 
-  rdd_reg_lm(slope = "separate", order = 13) %>% 
-  summary()
+# Play with this! What happens if you use a third, fourth and fifth order polynomial? With and without the data limitation to 20-22?
