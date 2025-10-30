@@ -1,0 +1,119 @@
+---
+title: "Problem Set 3"
+author: "MaCCS 201 - Fall 2025"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list = ls()) # clear memory
+
+
+```
+
+### Please submit markdown file named [last_name]_[first_name]_ps1.Rmd or a pdf with all code and answers. 
+
+##Part 1: Blackburn and Neumark (1992)
+
+Let's take a look at the data from Blackburn and Neumark (QJE 1992). 
+ We would like to estimate the model: 
+ 
+\begin{eqnarray}
+\log(wage) &=& \beta_o + exper\cdot\beta_1 +tenure\cdot\beta_2+
+married\cdot\beta_3+ south\cdot\beta_4 + \\ && urban\cdot\beta_5+
+black\cdot\beta_6+ educ\cdot\beta_7 + abil\cdot\gamma +
+\varepsilon \nonumber
+\end{eqnarray}
+
+One of the big problems in the wage literature is that
+we do not observe ability. If ability is not
+correlated with any of the right hand side variables, we can
+include it in the disturbance and nothing is lost by not observing
+it. If, however, it is correlated with one or more of the right
+hand side variables, OLS is no longer unbiased or consistent.
+Assume that ability is correlated with education and none of the
+other right hand side variables. 
+
+a) Derive the bias of $\beta_7$ and
+show what direction the bias goes in depending on whether the
+correlation between ability and education is positive or negative.
+
+
+b)  You showed in the first part that we can derive the sign/direction
+of the bias. One approach that has been take in the literature is
+using a "proxy" variable for the unobservable ability. We will use
+IQ here to proxy for ability. Estimate the model above excluding
+ability, record your parameter estimates, standard errors and
+$R^2$. 
+
+```{r q1b, include=TRUE}
+
+
+```
+
+
+c) Estimate the model including IQ as a proxy, record
+your parameter estimates, standard errors and $R^2$.
+
+```{r q1c, include=TRUE}
+
+```
+
+d)  What happens to returns to schooling? Does this result
+confirm your suspicion of how ability and schooling are expected
+to be correlated?  
+
+
+
+## Part 2: Card (1995)
+
+a) Read the data into R. Plot the series make sure your data are
+read in correctly. 
+
+```{r q1d, include=TRUE}
+
+```
+b)  Estimate a $\log(wage)$ regression via
+Least Squares with $educ$, $exper$, $exper^2$, $black$, $south$,
+$smsa$, $reg661$ through $reg668$ and $smsa66$ on the right hand
+side. Check your results against Table2, column 5.
+
+```{r q1e, include=TRUE}
+
+```
+
+
+c) Estimate a
+reduced form equation for $educ$ containing all of the explanatory
+variables and the dummy variable $nearc4$. Is the partial
+correlation between $nearc4$ and $educ$ statistically significant?
+
+```{r q1f, include=TRUE}
+
+```
+
+d)  Estimate the $\log(wage)$ equation by instrumental
+variables, using $nearc4$ as an instrument for $educ$. Compare the
+95\% confidence interval for the return to education to that
+obtained from the Least Squares regression above. 
+
+```{r q1g, include=TRUE}
+
+```
+
+
+e) (Bonus) Now use
+multiple instruments. Use $nearc2$ and $nearc4$ as instruments for
+$educ$. Comment on the significance of the partial correlations of
+both instruments in the reduced form. 
+
+```{r q1h, include=TRUE}
+
+```
+
+
+ 
+
+
+
